@@ -7,35 +7,36 @@
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
 <script type="text/javascript">
   const URL = "https://ddave2903.github.io/my-teachable-machine-model/";
-  
+
   let model, labelContainer, maxPredictions, selectedImage;
-  
+
   async function init() {
     const modelURL = URL + "model.json";
     const metadataURL = URL + "metadata.json";
-    
+
     model = await tmImage.load(modelURL, metadataURL);
     maxPredictions = model.getTotalClasses();
-    
+
     labelContainer = document.getElementById("label-container");
     for (let i = 0; i < maxPredictions; i++) {
       labelContainer.appendChild(document.createElement("div"));
     }
   }
-  
+
   async function predict() {
     if (selectedImage) {
       const img = selectedImage;
       const prediction = await model.predict(img);
       for (let i = 0; i < maxPredictions; i++) {
-        const classPrediction = prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+        const classPrediction =
+          prediction[i].className + ": " + prediction[i].probability.toFixed(2);
         labelContainer.childNodes[i].innerHTML = classPrediction;
       }
     } else {
       labelContainer.innerHTML = "No image selected";
     }
   }
-  
+
   function selectImage() {
     const input = document.getElementById("image-selector");
     input.click();
@@ -49,12 +50,12 @@
             document.getElementById("selected-image").src = selectedImage.src;
             document.getElementById("selected-image").style.display = "block";
             predict();
-          }
-        }
+          };
+        };
         reader.readAsDataURL(input.files[0]);
       }
     });
   }
-  
+
   init();
 </script>
