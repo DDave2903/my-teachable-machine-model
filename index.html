@@ -1,61 +1,55 @@
-<div>Teachable Machine Image Model</div>
-<button type="button" onclick="selectImage()">Select Image</button>
-<input type="file" id="image-selector" accept="image/*" style="display: none;">
+<div>
+    Teachable Machine Image Model
+</div>
+<button type="button" onclick="init()">Start</button>
+<input type="file" onchange="onFileSelected(event)">
+<div id="image-container"></div>
 <div id="label-container"></div>
-<img id="selected-image" style="display: none;">
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
 <script type="text/javascript">
-  const URL = "https://ddave2903.github.io/my-teachable-machine-model/";
+    // More API functions here:
+    // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
 
-  let model, labelContainer, maxPredictions, selectedImage;
+    // the link to your model provided by Teachable Machine export panel
+    const URL = "./my_model/";
 
-  async function init() {
-    const modelURL = URL + "model.json";
-    const metadataURL = URL + "metadata.json";
+    let model, labelContainer, maxPredictions;
 
-    model = await tmImage.load(modelURL, metadataURL);
-    maxPredictions = model.getTotalClasses();
+    async function init() {
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
 
-    labelContainer = document.getElementById("label-container");
-    for (let i = 0; i < maxPredictions; i++) {
-      labelContainer.appendChild(document.createElement("div"));
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+        labelContainer = document.getElementById("label-container");
+        for (let i = 0; i < maxPredictions; i++) {
+            labelContainer.appendChild(document.createElement("div"));
+        }
     }
-  }
 
-  async function predict() {
-    if (selectedImage) {
-      const img = selectedImage;
-      const prediction = await model.predict(img);
-      for (let i = 0; i < maxPredictions; i++) {
-        const classPrediction =
-          prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-        labelContainer.childNodes[i].innerHTML = classPrediction;
-      }
-    } else {
-      labelContainer.innerHTML = "No image selected";
+    async function predict(image) {
+        const prediction = await model.predict(image, false);
+        for (let i = 0; i < maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+        }
     }
-  }
 
-  function selectImage() {
-    const input = document.getElementById("image-selector");
-    input.click();
-    input.addEventListener("change", function() {
-      if (input.files && input.files[0]) {
+    function onFileSelected(event) {
+        const selectedFile = event.target.files[0];
         const reader = new FileReader();
-        reader.onload = function(e) {
-          selectedImage = new Image();
-          selectedImage.src = e.target.result;
-          selectedImage.onload = function() {
-            document.getElementById("selected-image").src = selectedImage.src;
-            document.getElementById("selected-image").style.display = "block";
-            predict();
-          };
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
-    });
-  }
-
-  init();
+        const img = document.createElement("img");
+        reader.onload = function(event) {
+            img.onload = function() {
+                predict(img);
+                const imageContainer = document.getElementById("image-container");
+                imageContainer.innerHTML = "";
+                imageContainer.appendChild(img);
+            }
+            img.src = event.target.result;
+        }
+        reader.readAsDataURL(selectedFile);
+    }
 </script>
