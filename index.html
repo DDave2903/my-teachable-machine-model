@@ -43,10 +43,10 @@
         const img = document.createElement("img");
         reader.onload = function(event) {
             img.onload = function() {
-                predict(img);
                 const imageContainer = document.getElementById("image-container");
                 imageContainer.innerHTML = "";
                 imageContainer.appendChild(img);
+                predict(img); // Call predict function when new image is selected
             }
             img.src = event.target.result;
         }
